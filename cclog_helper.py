@@ -163,7 +163,7 @@ def parse_session_minimal(
         assistant_count = 0
         total_messages = 0
         matched_summaries = []
-        userTitle = "[noneTitle]"  # Default title if not found
+        userTitle = "(no title)"  # Default title if not found
         aiTitle = None
         customTitle = None
         assistant_uuids_checked = set()  # Track checked UUIDs to avoid duplicates
@@ -224,9 +224,9 @@ def parse_session_minimal(
             return None
 
         if customTitle:
-            userTitle = "[" + customTitle.strip() + "]"
+            userTitle = customTitle.strip()
         if not customTitle and aiTitle:
-            userTitle = "[" + aiTitle.strip() + "]"
+            userTitle = aiTitle.strip()
 
         # Parse last line for timestamp
         last_timestamp = start_timestamp  # Default to start if can't parse last
@@ -374,7 +374,7 @@ def get_session_list(project_dir):
 
             # Use Unit Separator (0x1F) as delimiter - non-printable ASCII character
             print(
-                f"{summary.formatted_time:<19} {summary.formatted_modified:>8} {summary.formatted_duration:>8} {summary.line_count:>8} {summary.title}  {formatted_msg}\x1f{summary.session_id}"
+                f"{summary.formatted_time:<19} {summary.formatted_modified:>8} {summary.formatted_duration:>8} {summary.line_count:>8}  [{summary.title}] {formatted_msg}\x1f{summary.session_id}"
             )
 
 
