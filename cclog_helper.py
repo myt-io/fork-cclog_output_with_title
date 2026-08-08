@@ -880,7 +880,10 @@ def export_markdown(file_path, output_dir="claude_chat"):
         # Add YAML front matter
         markdown_content.append("---")
         markdown_content.append(f"title: \"{session_info.title}\"")
+        markdown_content.append(f"session_id: {session_info.session_id}")
         markdown_content.append(f"date: {session_info.start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
+        markdown_content.append(f"modified: {session_info.formatted_modified}")
+        markdown_content.append(f"time: {session_info.formatted_time}")
         markdown_content.append(f"duration: \"{session_info.formatted_duration}\"")
         markdown_content.append(f"messages: {session_info.line_count}")
         if session_info.actual_total_messages is not None:
@@ -894,7 +897,7 @@ def export_markdown(file_path, output_dir="claude_chat"):
             markdown_content.append(f"summary: \"{summary_text}\"")
         markdown_content.append("---")
 
-        markdown_content.append(f"# Claude Code Session {session_id}")
+        markdown_content.append(f"# Claude Code Session - {session_info.title} [{session_id}]")
         markdown_content.append("")
         
         # Add session metadata
