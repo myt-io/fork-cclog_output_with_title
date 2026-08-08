@@ -18,6 +18,7 @@ class SessionSummary:
     """Summary data for a session - used by both list and info views"""
 
     session_id: str
+    title: str
     file_path: Path
     start_timestamp: datetime
     first_user_message: str
@@ -162,6 +163,9 @@ def parse_session_minimal(
         assistant_count = 0
         total_messages = 0
         matched_summaries = []
+        userTitle = "[noneTitle]"  # Default title if not found
+        aiTitle = None
+        customTitle = None
         assistant_uuids_checked = set()  # Track checked UUIDs to avoid duplicates
 
         with open(file_path, "r") as f:
@@ -207,12 +211,22 @@ def parse_session_minimal(
                             if msg_uuid in summary_index:
                                 matched_summaries.append(summary_index[msg_uuid])
 
+                    if msg_type == "ai-title":
+                        aiTitle = data.get("aiTitle")
+                    if msg_type == "custom-title":
+                        customTitle = data.get("customTitle")
+
                 except json.JSONDecodeError:
                     # Skip lines that aren't valid JSON
                     continue
 
         if not start_timestamp:
             return None
+
+        if customTitle:
+            userTitle = "[" + customTitle.strip() + "]"
+        if not customTitle and aiTitle:
+            userTitle = "[" + aiTitle.strip() + "]"
 
         # Parse last line for timestamp
         last_timestamp = start_timestamp  # Default to start if can't parse last
@@ -234,6 +248,7 @@ def parse_session_minimal(
             file_size=stat.st_size,
             last_timestamp=last_timestamp,
             line_count=line_count,
+            title=userTitle,
             matched_summaries=matched_summaries if matched_summaries else None,
             user_count=user_count if user_count > 0 else None,
             assistant_count=assistant_count if assistant_count > 0 else None,
@@ -359,7 +374,7 @@ def get_session_list(project_dir):
 
             # Use Unit Separator (0x1F) as delimiter - non-printable ASCII character
             print(
-                f"{summary.formatted_time:<19} {summary.formatted_modified:>8} {summary.formatted_duration:>8} {summary.line_count:>8}  {formatted_msg}\x1f{summary.session_id}"
+                f"{summary.formatted_time:<19} {summary.formatted_modified:>8} {summary.formatted_duration:>8} {summary.line_count:>8} {summary.title}  {formatted_msg}\x1f{summary.session_id}"
             )
 
 
@@ -375,6 +390,7 @@ def get_session_info(file_path):
         return
 
     print(f"{'Session:':<10} {summary.session_id}")
+    print(f"{'Title:':<10} {summary.title}")
     print(f"{'Messages:':<10} {summary.line_count}")
     print(f"{'Started:':<10} {summary.formatted_time}")
     if summary.last_timestamp and summary.last_timestamp != summary.start_timestamp:
