@@ -784,6 +784,9 @@ def format_markdown_message(data):
         text_content = content
     else:
         text_content = message_text
+
+    if text_content.strip() == "":
+        return None  # Skip empty messages
     
     return f"## {role} ({time_str})\n\n{text_content}\n\n"
 
@@ -870,9 +873,27 @@ def export_markdown(file_path, output_dir="claude_chat"):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_filename = f"{session_id}_{timestamp}.md"
         output_path = os.path.join(output_dir, output_filename)
-        
+
         # Start building markdown content
         markdown_content = []
+
+        # Add YAML front matter
+        markdown_content.append("---")
+        markdown_content.append(f"title: \"{session_info.title}\"")
+        markdown_content.append(f"date: {session_info.start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
+        markdown_content.append(f"duration: \"{session_info.formatted_duration}\"")
+        markdown_content.append(f"messages: {session_info.line_count}")
+        if session_info.actual_total_messages is not None:
+            markdown_content.append(f"actual_total_messages: {session_info.actual_total_messages}")
+        if session_info.actual_user_messages is not None:
+            markdown_content.append(f"actual_user_messages: {session_info.actual_user_messages}")
+        if session_info.actual_assistant_messages is not None:
+            markdown_content.append(f"actual_assistant_messages: {session_info.actual_assistant_messages}")
+        if session_info.matched_summaries:
+            summary_text = ", ".join(session_info.matched_summaries)
+            markdown_content.append(f"summary: \"{summary_text}\"")
+        markdown_content.append("---")
+
         markdown_content.append(f"# Claude Code Session {session_id}")
         markdown_content.append("")
         
